@@ -1,0 +1,107 @@
+{% extends "layout-private.html" %}
+
+{% block title %}
+Tugas - {{ parent() }}
+{% endblock %}
+
+{% block content %}
+<div class="module">
+    <div class="module-head">
+        <h3>Tugas</h3>
+    </div>
+    <div class="module-body">
+        {{ get_flashdata('tugas')|raw }}
+
+        
+            {% if (is_siswa() == false) %}
+            <div class="btn-group pull-right" style="margin-top:-5px;">
+                {{ anchor('tugas/add/3', 'Tambah Tugas Ganda', {'class' : 'btn btn-primary', 'style' : 'background-color: #0076BB;margin-right: 2px'})|raw }}
+                {{ anchor('tugas/add/2', 'Tambah Tugas Essay', {'class' : 'btn btn-primary', 'style' : 'background-color: #0076BB;margin-right: 2px'})|raw }}
+                {{ anchor('tugas/add/1', 'Tambah Tugas Upload', {'class' : 'btn btn-primary', 'style' : 'background-color: #0076BB'})|raw }}
+            </div>
+            {% endif %}
+
+        
+
+        <br><br><br>
+
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th width="7%">ID</th>
+                    <th>Informasi Tugas</th>
+                    <th width="15%">Tipe Tugas</th>
+                    <th width="15%"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for no, m in tugas %}
+                <tr {{ (is_siswa() and m.aktif == 1 and sudah_ngerjakan(m.id, get_sess_data('user', 'id')) == false) ? 'class="success"' }}>
+                    <td><b>{{ m.id }}</b></td>
+                    <td>
+                        <strong class="text-warning">{{ m.judul }}</strong>
+                        <br><small><b>{{ m.mapel.nama }}</b>
+
+                        {% for mk in m.tugas_kelas %}
+                            , {{ mk.nama }}
+                        {% endfor %}
+
+                        {% if m.type_label == 'Ganda' or m.type_label == 'Essay' %}
+                            , {{ m.durasi }} Menit
+                        {% endif %}
+
+                        </small>
+                        <br><small><b>Pembuat : </b> {{ m.pembuat.nama }}, {{ tgl_jam_indo(m.tgl_buat) }}</small>
+                        {% if is_siswa() and m.info != '' %}
+                            <hr style="margin-top: 5px;margin-bottom: 5px;border:none;border-bottom: 1px dashed black;">
+                            {{ m.info|raw }}
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if m.type_label == 'Ganda' %}
+                            <span class="label label-success">Ganda</span>
+                        {% elseif m.type_label == 'Essay' %}
+                            <span class="label label-info">Essay</span>
+                        {% elseif m.type_label == 'Upload' %}
+                            <span class="label label-warning">Upload</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        <div class="btn-group pull-right">
+                        {% if is_siswa() == false %}
+                            {% if m.type_label == 'Ganda' or m.type_label == 'Essay' %}
+                                {{ anchor('tugas/manajemen_soal/' ~ m.id, '<i class="icon icon-tasks"></i> Soal', {'class' : 'btn btn-primary btn-small', 'style' : 'background-color: #0076BB'})|raw }}
+                            {% endif %}
+                            {% if m.aktif == 0 %}
+                                {{ anchor('tugas/terbitkan/' ~ m.id ~ '/' ~ enurl_redirect(current_url()), '<i class="icon-ok"></i> Terbitkan', {'class' : 'btn btn-success btn-small'})|raw }}
+                            {% elseif m.aktif == 1 %}
+                                {{ anchor('tugas/tutup/' ~ m.id ~ '/' ~ enurl_redirect(current_url()), '<i class="icon-minus"></i> Tutup', {'class' : 'btn btn-danger btn-small'})|raw }}
+                            {% endif %}
+
+                            {{ anchor('tugas/edit/' ~ m.id ~ '/' ~ enurl_redirect(current_url()), '<i class="icon-edit"></i> Edit', {'class' : 'btn btn-default btn-small', 'style' : 'border: 1px solid #0076BB; color: #0076BB'})|raw }}
+                            {% if m.type_id == 3 %}
+                                {{ anchor('tugas/nilai/' ~ m.id, '<i class="icon-eye-open"></i> Lihat Nilai', {'class' : 'btn btn-success btn-small'})|raw }}
+                            {% else %}
+                                {{ anchor('tugas/koreksi/' ~ m.id, '<i class="icon-check"></i> Koreksi', {'class' : 'btn btn-info btn-small'})|raw }}
+                            {% endif %}
+                        {% elseif is_siswa() == true %}
+                            {% if m.aktif == 1 %}
+                                {% if sudah_ngerjakan(m.id, get_sess_data('user', 'id')) == false %}
+                                    {{ anchor('tugas/kerjakan/' ~ m.id, '<i class="icon-ok-sign"></i> Mulai Kerjakan', {'class' : 'btn btn-success btn-small', 'onclick' : 'return confirm(\'Anda yakin ingin memulai mengerjakan tugas ini?\')'})|raw }}
+                                {% endif %}
+                            {% else %}
+                                {{ anchor('tugas/nilai/' ~ m.id, '<i class="icon-flag"></i> Lihat Nilai', {'class' : 'btn btn-info btn-small iframe-lihat-nilai'})|raw }}
+                            {% endif %}
+                        {% endif %}
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <br>
+        {{ pagination|raw }}
+
+    </div>
+</div>
+{% endblock %}

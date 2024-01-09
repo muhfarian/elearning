@@ -1,0 +1,105 @@
+{% extends "layout-private.html" %}
+
+{% block title %}
+Data Siswa - {{ parent() }}
+{% endblock %}
+
+{% block content %}
+<div class="module">
+    <div class="module-head">
+        <h3>Data Siswa</h3>
+    </div>
+    <div class="module-body">
+        {{ get_flashdata('siswa')|raw }}
+
+        <div class="row-fluid">
+            <div class="span7">
+                <a href="{{ site_url('siswa/add/' ~ status_id) }}" class="btn btn-primary" style="background-color: #0076BB; padding-bottom: 5px;">
+                    <img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAALUlEQVR4nGNgGNTg////q0F41ID/q0kKsP+o+DEUY8hR3wBsYDQaGSgPA7oAALmgocHy4lp8AAAAAElFTkSuQmCC"> Tambah Siswa</a>
+            </div>
+
+            <div class="span5">
+                <div class="btn-group pull-right">
+                    {{ anchor('siswa/index/1', 'Aktif', {'class' : (status_id == 1) ? 'btn btn-success' : 'btn btn-default'})|raw }}
+                    {{ anchor('siswa/index/0', 'Pending ' ~ ((count_pending > 0) ? '<span class="label label-warning">' ~ count_pending  ~ '</span>'), {'class' : (status_id == 0) ? 'btn btn-warning' : 'btn btn-default'})|raw }}
+                    {{ anchor('siswa/index/2', 'Blocking', {'class' : (status_id == 2) ? 'btn btn-danger' : 'btn btn-default'})|raw }}
+                    {{ anchor('siswa/index/3', 'Alumni', {'class' : (status_id == 3) ? 'btn btn-info' : 'btn btn-default'})|raw }}
+                    
+                </div>
+            </div>
+        </div>
+        <br>
+
+       {{ form_open('siswa/index/' ~ status_id)|raw }}
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th width="7%">
+                        {% if status_id == 0 or status_id == 2 %}
+                             <input type="checkbox" style="margin-top:-2px;" onclick="filter_siswa_ch_uch_checkbox(this)">
+                        {% endif %}
+                        ID
+                    </th>
+                    <th>Informasi Siswa</th>
+                    <th width="22%"></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for no, v in siswas %}
+                <tr>
+                    <td>
+                        {% if status_id == 0 or status_id == 2 %}
+                            <input type="checkbox" name="siswa_id[]" value="{{ v.id }}" style="margin-top:-2px;">
+                        {% endif %}
+                        <b>{{ v.id }}</b>
+                    </td>
+                    <td>
+                        <img style="height:40px;width:40px; margin-right: 10px;" class="img-polaroid img-circle pull-left" src="{{ get_url_image_siswa(v.foto, 'medium', v.jenis_kelamin) }}">
+                        <b>{{ v.nama }} {{ ((v.nis is not empty) ? '<span class="text-muted">(' ~ v.nis ~ ')</span>')|raw }}</b>
+                        <br>{{ (v.status_id != 3) ? v.kelas_aktif.nama ~ ' , ' }} {{ v.jenis_kelamin }} , {{ v.agama }}
+                    </td>
+                    <td>
+                        <ul class="nav nav-pills" style="margin-bottom:0px;">
+                            <li><a class="btn btn-info btn-small" href="{{ site_url('siswa/detail/' ~ status_id ~ '/' ~ v.id) }}"><i class="icon-zoom-in"></i> Detail</a></li>
+                        </ul>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+
+        {% if siswas is not empty and (status_id == 0 or status_id == 2) %}
+        <br>
+        <div class="row-fluid">
+            <div class="span7">
+                <table cellpadding="5">
+                    <tr>
+                        <th valign="top">Update Status Terpilih</th>
+                        <td valign="top">
+                            <select name="status_id" style="width:100%;">
+                                <option>--Pilih Status--</option>
+                                <option value="1">Aktif</option>
+                                {% if status_id == 0 %}
+                                <option value="2">Blocking</option>
+                                {% elseif status_id == 2 %}
+                                <option value="3">Alumni</option>
+                                {% endif %}
+                            </select>
+                        </td>
+                        <td valign="top">
+                            <button type="submit" class="btn btn-primary" style="background-color: #0076BB;">Update</button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
+        {{ form_close()|raw }}
+
+        <br>
+        {{ pagination|raw }}
+
+    </div>
+</div>
+{% endblock %}

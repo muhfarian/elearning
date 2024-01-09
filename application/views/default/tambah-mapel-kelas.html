@@ -1,0 +1,55 @@
+{% extends "layout-private.html" %}
+
+{% block title %}
+Matapelajaran Kelas - {{ parent() }}
+{% endblock %}
+
+{% block content %}
+<div class="module">
+    <div class="module-head">
+        <h3>{{ anchor(uri_back, '<img src="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABAAAAAQCAYAAAAf8/9hAAAACXBIWXMAAAsTAAALEwEAmpwYAAAAU0lEQVR4nGNgGMagdFc+Q8VuYTI17+5mKNv9n6Fsdzw5NrdBNVfSW/NumLPfMpTtXkUQU98AECjb3Qo2pHRXFQPZoIwahpRSEo0MMEMoSUhDCgAA1+1Uc756Ez4AAAAASUVORK5CYII="> Kembali',
+            {'class' : 'btn btn-small',  'style' : 'border: 1px solid #0076BB;color: #0076BB'})|raw }}</h3>
+    </div>
+    <div class="module-body">
+        {{ get_flashdata('mapel')|raw }}
+
+        {% if is_demo_app() %}
+            {{ get_alert('warning', get_demo_msg())|raw }}
+        {% endif %}
+
+        
+
+        {% if is_demo_app() == false %}
+        {{ form_open('kelas/mapel_kelas/add/' ~ parent['id'] ~ '/' ~ kelas['id'] ~ '/' ~ enurl_redirect(uri_back)) | raw }}
+        {% endif %}
+        <table class="table table-striped">
+        <tbody>
+            <tr>
+                <td>
+                    <label><input type="checkbox" class="checkAll" style="margin-top:-3px;margin-right:5px;"/> Pilih semua</label>
+                </td>
+            </tr>
+            {% for m in mapels %}
+            {% set checked = get_row_data('mapel_model', 'retrieve_kelas', [null, kelas['id'], m.id]) %}
+            <tr>
+                <td>
+                    <label><input class="checkbox-mapel" type="checkbox" name="mapel[]" value="{{ m.id }}" style="margin-top:-2px;margin-right:5px;" {{ (m.aktif != 1) ? 'disabled' : '' }} {{ (checked is empty or checked.aktif == 0) ? '' : 'checked' }}> <b>{{ m.nama }}</b></label>
+                    <small>{{ m.info|nl2br }}</small>
+                </td>
+            </tr>
+            {% endfor %}
+            
+        </tbody>
+        </table>
+        <br>
+        {% if is_demo_app() == false %}
+        <button type="submit" class="btn btn-primary" style="background-color: #0076BB">Simpan</button>
+        {% endif %}
+        <a href="{{ uri_back }}" class="btn btn-default" style="border: 1px solid #0076BB;">Kembali</a>
+
+        {% if is_demo_app() == false %}
+        {{ form_close()|raw }}
+        {% endif %}
+    </div>
+</div>
+{% endblock %}
